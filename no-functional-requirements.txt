@@ -1,0 +1,23 @@
+let´s implement the changes and build the entire app. 
+
+make sure all is working and that we have two separated folder for frontend and backend under the CarouselOptimizer folder.
+
+think that we have the correct Separation of Concerns and the code is clean and simple in general.
+Follow good coding practices.
+
+Add unit and integration tests for backend.
+
+And after implementing we also need all steps to push this to github and be able to deploy both servers.
+
+How can we configure IaC or cloud changes?
+PLease include all required configuration.
+
+Add a logger wrapper for each project to send logs for all functions to be able to debug if required.
+
+For backend use a simple Python framework. 
+
+Lets add a command to set up the app in local.
+
+AFter the code is implemented I want to try it in local, so we need to write a read me file with the detailed instructions. A junior dev should be able to set it up.
+
+Also, lets make a file for the deployment structions for each service

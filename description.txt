@@ -1,0 +1,399 @@
+PDP Carousel Optimizer (Spark-style) — MVP Requirements & Specification
+
+Version: v0.2 (Vizit-aligned)
+Purpose: Interview demo project for Vizit (React + Python + AI + AWS-ready)
+
+1. Product Overview
+1.1 Goal
+
+Build a running web application that helps ecommerce teams optimize product image carousels by providing:
+
+Real-time image analysis
+
+AI-driven carousel ordering recommendations
+
+Duplicate detection using visual embeddings
+
+Actionable quality improvement suggestions
+
+This MVP is designed as a “Spark-lite” demo aligned with Vizit’s positioning around:
+
+AI-powered creative optimization
+
+Carousel recommendations
+
+Visual benchmarking workflows
+
+(Vizit markets these capabilities publicly through Spark and platform features.)
+
+2. MVP Scope (What We Build)
+Core user outcome
+
+A user uploads 5–12 product images and receives:
+
+A recommended carousel order
+
+Per-image quality score + warnings
+
+Duplicate / redundancy detection
+
+Suggestions for improving weaker images
+
+MVP constraints
+
+No paid services
+
+No training models
+
+Use pretrained AI only
+
+Fast, deterministic results
+
+One clean deployable demo
+
+3. Key AI Components (What Makes This Real AI)
+
+This MVP contains three legitimate AI engineering components, matching Vizit’s workflow.
+
+AI Component 1 — Vision Embeddings (Visual Understanding)
+What it is
+
+Each uploaded image is processed by a pretrained computer vision model (e.g., CLIP/ViT) to produce a dense embedding vector.
+
+Embedding = numerical representation of visual semantics.
+
+Why it matters
+
+Embeddings enable:
+
+Visual similarity detection
+
+Benchmarking vs other images
+
+Diversity-aware ordering
+
+Trend clustering (future extension)
+
+Used for in MVP
+
+✅ near-duplicate detection
+✅ diversity scoring in carousel recommendations
+
+AI Component 2 — Similarity & Redundancy Detection
+What it is
+
+Once embeddings exist, the system computes cosine similarity between all images.
+
+This identifies:
+
+redundant carousel content
+
+repeated angles
+
+nearly identical visuals
+
+Used for in MVP
+
+✅ flag duplicates
+✅ penalize redundancy in ranking engine
+
+AI Component 3 — AI-driven Recommendation Engine (Spark-style)
+What it is
+
+A ranking algorithm uses AI-derived signals (embeddings + quality metrics) to recommend the best carousel order.
+
+The recommendation optimizes for:
+
+Hero image first
+
+High clarity
+
+Maximum diversity
+
+Minimal duplication
+
+Why it matches Vizit
+
+Vizit Spark markets AI carousel recommendations and optimization workflows.
+
+This MVP demonstrates the core building block of that pipeline.
+
+4. Functional Requirements
+4.1 Upload & Input Handling
+User Requirements
+
+Drag & drop upload of multiple images
+
+Thumbnail preview before analysis
+
+Remove images before running recommendation
+
+Supported Formats
+
+JPG, PNG, WebP
+
+Limits
+
+Max 12 images per session
+
+Max 8MB per file
+
+4.2 Real-Time Image Analysis
+
+For each uploaded image, compute:
+
+Visual Quality Metrics
+
+Blur detection (Laplacian variance)
+
+Brightness score (mean luminance)
+
+Contrast score (standard deviation)
+
+Resolution validation
+
+Output Per Image
+
+Quality score (0–100)
+
+Flags: blurry, dark, low contrast, low resolution
+
+4.3 Duplicate & Similarity Detection (AI-powered)
+Process
+
+Generate embedding for each image
+
+Compute similarity matrix
+
+Flag duplicates above threshold (e.g., 0.92 cosine similarity)
+
+Output
+
+Duplicate pairs list
+
+Redundancy warnings shown in UI
+
+4.4 Carousel Recommendation Engine
+Goal
+
+Recommend the optimal image order for PDP conversion-style presentation.
+
+Algorithm (MVP)
+
+Select Hero Image
+
+highest quality score
+
+not redundant
+
+Iteratively select next images maximizing:
+
+score = 0.6 * quality + 0.4 * diversity
+diversity = 1 - max_similarity_to_selected
+
+
+Penalize duplicates heavily
+
+Output
+
+Ordered list of images
+
+Explanation for each placement
+
+Example reason strings:
+
+“Hero: highest clarity and contrast”
+
+“Adds diversity vs hero (new angle/context)”
+
+“Lower due to redundancy”
+
+4.5 Optimization Suggestions (Rule-Based)
+
+Each flagged issue generates suggestions:
+
+Flag	Suggestion
+blurry	Improve sharpness / focus
+too dark	Increase lighting/exposure
+low contrast	Enhance contrast for clarity
+duplicate	Replace with different angle
+low resolution	Upload higher-res asset
+
+Note: No paid LLM calls required.
+
+4.6 Results & Export
+
+User can download:
+
+Recommended order
+
+Scores & flags
+
+Duplicate warnings
+
+Export format: JSON
+
+5. UI Specification
+Screen 1 — Upload Page
+
+Components:
+
+Dropzone upload area
+
+Thumbnail grid
+
+“Analyze & Recommend” button
+
+Loading state
+
+Screen 2 — Carousel Recommendation Results
+
+Components:
+
+Ranked carousel list (1…N)
+
+Score badge + warning flags
+
+Explanation per position
+
+Suggestions panel
+
+Duplicate alerts
+
+Download JSON button
+
+6. System Architecture
+6.1 Technology Stack (Free-first)
+Frontend
+
+React + Vite
+
+Tailwind CSS
+
+react-dropzone
+
+Backend
+
+Python FastAPI
+
+OpenCV or Pillow
+
+PyTorch
+
+CLIP embeddings (open_clip_torch)
+
+No paid services required
+6.2 Libraries & Tools
+Python Dependencies
+
+fastapi
+
+uvicorn
+
+opencv-python / pillow
+
+numpy
+
+torch
+
+open_clip_torch
+
+scikit-learn (optional)
+
+Frontend Dependencies
+
+react
+
+vite
+
+react-dropzone
+
+fetch/axios
+
+Dev Tools
+
+Git + GitHub
+
+Docker (optional)
+
+VS Code / Cursor
+
+7. API Specification
+POST /api/analyze
+
+Uploads images, runs analysis, returns recommendation.
+
+Response structure:
+
+{
+  "images": [
+    {
+      "id": "uuid",
+      "score": 84,
+      "flags": ["low_contrast"],
+      "suggestions": ["Increase contrast for better clarity"]
+    }
+  ],
+  "duplicates": [
+    {"a": "id1", "b": "id2", "similarity": 0.94}
+  ],
+  "recommended_order": [
+    {"position": 1, "id": "id3", "reason": "Hero: best clarity"},
+    {"position": 2, "id": "id1", "reason": "Adds diversity"}
+  ]
+}
+
+GET /api/image/{id}
+
+Serves uploaded image for preview.
+
+GET /health
+
+Health check.
+
+8. Architecture Diagram (MVP)
+┌──────────────────────────────┐
+│        User Browser          │
+│   Upload PDP Carousel Images │
+└──────────────┬───────────────┘
+               │
+               ▼
+┌──────────────────────────────┐
+│      React Frontend (Vite)   │
+│ Upload UI + Results Dashboard│
+└──────────────┬───────────────┘
+               │ POST /api/analyze
+               ▼
+┌──────────────────────────────┐
+│       FastAPI Backend        │
+│ Image Pipeline + Ranking     │
+└──────────────┬───────────────┘
+               │
+   ┌───────────┼──────────────────────────────┐
+   ▼           ▼                              ▼
+Quality Metrics   CLIP Embeddings        Similarity Matrix
+(OpenCV/Pillow)   (PyTorch)             (cosine similarity)
+   ▼           ▼                              ▼
+   └───────────┴───────────────┬──────────────┘
+                               ▼
+                  Carousel Recommendation Engine
+                   (hero + diversity ranking)
+                               ▼
+                  JSON Output + Explanations
+                               ▼
+┌──────────────────────────────┐
+│      Results UI + Export      │
+└──────────────────────────────┘
+
+9. Acceptance Criteria (Definition of Done)
+
+MVP is complete when:
+
+✅ Upload 5–12 images
+✅ Run analysis in <10s
+✅ Scores + warnings per image
+✅ Duplicate detection works
+✅ Carousel order recommendation produced
+✅ Explanations + suggestions visible
+✅ Single-page deployable demo
+✅ Repo + README ready to share with Vizit

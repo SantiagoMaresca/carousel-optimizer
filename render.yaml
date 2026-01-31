@@ -1,0 +1,44 @@
+services:
+  - type: web
+    name: carousel-optimizer-backend
+    runtime: python
+    plan: free
+    buildCommand: |
+      cd backend
+      pip install --upgrade pip
+      pip install -r requirements.txt
+    startCommand: |
+      cd backend
+      uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: ENVIRONMENT
+        value: production
+      - key: DEBUG
+        value: false
+      - key: UPLOAD_DIRECTORY
+        value: /opt/render/project/data/uploads
+      - key: MAX_FILE_SIZE
+        value: 8388608
+      - key: MAX_FILES
+        value: 12
+      - key: SESSION_TTL_HOURS
+        value: 2
+      - key: LOG_LEVEL
+        value: INFO
+      - key: LOG_FORMAT
+        value: json
+      - key: CORS_ORIGINS
+        value: '["https://carousel-optimizer.vercel.app","http://localhost:3000"]'
+      - key: USE_S3
+        value: true
+      - key: S3_ENDPOINT_URL
+        value: https://cd37258073ab5be19770b744846797ee.r2.cloudflarestorage.com
+      - key: S3_ACCESS_KEY
+        sync: false  # Set in dashboard
+      - key: S3_SECRET_KEY
+        sync: false  # Set in dashboard
+      - key: S3_BUCKET_NAME
+        value: uploads
+      - key: S3_REGION
+        value: auto
+    healthCheckPath: /health

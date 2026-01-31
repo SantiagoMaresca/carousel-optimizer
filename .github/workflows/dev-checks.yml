@@ -1,0 +1,55 @@
+name: Development Checks
+
+on:
+  pull_request:
+    branches: [ main, develop ]
+  push:
+    branches: [ develop, feature/* ]
+
+jobs:
+  # Quick development checks
+  quick-checks:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        
+    - name: Install Python dependencies
+      working-directory: CarouselOptimizer/backend
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        
+    - name: Install Node.js dependencies
+      working-directory: CarouselOptimizer/frontend
+      run: npm install
+      
+    - name: Python linting and type checking
+      working-directory: CarouselOptimizer/backend
+      run: |
+        # Run basic linting
+        python -m py_compile app/main.py
+        python -m py_compile -d app/
+        
+    - name: JavaScript linting
+      working-directory: CarouselOptimizer/frontend
+      run: npm run lint
+      
+    - name: Quick backend tests
+      working-directory: CarouselOptimizer/backend
+      run: pytest tests/test_api.py -v --tb=short
+      
+    - name: Frontend build check
+      working-directory: CarouselOptimizer/frontend
+      run: npm run build
