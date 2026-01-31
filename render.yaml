@@ -3,6 +3,7 @@ services:
     name: carousel-optimizer-backend
     runtime: python
     plan: free
+    pythonVersion: "3.11"
     buildCommand: |
       cd backend
       pip install --upgrade pip

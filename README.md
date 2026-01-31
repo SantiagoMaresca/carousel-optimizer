@@ -1,18 +1,52 @@
-# PDP Carousel Optimizer 🎠
+# Carousel Optimizer 🎠🤖
 
-> AI-powered Product Detail Page image carousel optimization with quality analysis, similarity detection, and automated ordering recommendations.
+> **AI-Powered Image Analysis** using OpenAI's CLIP model for intelligent carousel optimization with automated quality metrics, visual similarity detection, and smart ordering recommendations.
 
 [![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)](https://python.org)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.104+-green.svg)](https://fastapi.tiangolo.com)
 [![React](https://img.shields.io/badge/React-18+-blue.svg)](https://reactjs.org)
+[![AI](https://img.shields.io/badge/AI-CLIP%20Model-orange.svg)](https://github.com/openai/CLIP)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
+## 🧠 AI Technology
+
+This application leverages cutting-edge **Computer Vision AI** to analyze and optimize image carousels:
+
+### **OpenAI CLIP Model** 
+- **What it is**: Contrastive Language-Image Pre-Training - a neural network trained on 400M image-text pairs
+- **What we use it for**: Generates 512-dimensional embeddings that capture semantic image content
+- **Why it matters**: Understands image similarity beyond pixel comparison - recognizes objects, scenes, and concepts
+- **Implementation**: `open-clip-torch` library with ViT-B-32 architecture (151M parameters)
+
+### **AI-Powered Features**
+
+#### 1. **Visual Similarity Detection** 🔍
+- Compares CLIP embeddings using cosine similarity
+- Detects duplicate images (>95% similarity)
+- Identifies related images (>80% similarity)
+- Groups similar content for better carousel flow
+
+#### 2. **Computer Vision Quality Metrics** 📊
+Using OpenCV and custom algorithms:
+- **Blur Detection**: Laplacian variance analysis to identify out-of-focus images
+- **Brightness Analysis**: Histogram analysis for optimal exposure
+- **Contrast Evaluation**: Standard deviation of pixel values
+- **Resolution Check**: Ensures images meet minimum quality standards
+
+#### 3. **Smart Ordering Algorithm** 🎯
+- Prioritizes high-quality images first
+- Removes duplicates automatically
+- Groups similar images for narrative flow
+- Maximizes user engagement potential
 
 ## 🌟 Features
 
-### AI-Powered Analysis
-- **Visual Similarity Detection**: Uses CLIP embeddings to identify duplicate and similar images
-- **Quality Metrics**: Automated blur, brightness, contrast, and resolution analysis
-- **Smart Recommendations**: AI-driven carousel ordering for maximum engagement
+### **Production Stack**
+- **Backend**: FastAPI + PyTorch + OpenAI CLIP model
+- **Frontend**: React 18 + Vite + Tailwind CSS
+- **Storage**: Cloudflare R2 (S3-compatible)
+- **Deployment**: Render.com + Vercel
+- **AI/ML**: OpenCV, scikit-learn, NumPy
 
 ### User Experience
 - **Drag & Drop Upload**: Modern file upload with progress tracking

@@ -1,17 +1,33 @@
-# 🎉 Implementation Complete - PDP Carousel Optimizer
+# 🤖 Carousel Optimizer - AI-Powered Image Analysis
 
 ## 📊 Project Status: **PRODUCTION READY** ✅
 
+### 🧠 **Core AI Technology**
+
+**OpenAI CLIP Model Integration**
+- **Model**: ViT-B-32 architecture with 151 million parameters
+- **Library**: `open-clip-torch` for PyTorch implementation
+- **Embeddings**: 512-dimensional vectors capturing semantic image content
+- **Training**: Pre-trained on 400M image-text pairs from the web
+- **Use Case**: Visual similarity detection, duplicate identification, semantic grouping
+
+**Computer Vision Stack**
+- **OpenCV**: Blur detection (Laplacian variance), brightness/contrast analysis
+- **NumPy**: Fast numerical operations on image arrays
+- **Pillow**: Image loading, preprocessing, and manipulation
+- **scikit-learn**: Cosine similarity calculations for embeddings
+
 ### 🎯 **What We Built**
 
-A complete full-stack AI-powered Product Detail Page carousel optimization system with:
+A complete full-stack **AI-powered image carousel optimizer** with:
 
-- **🤖 AI Analysis Engine**: Visual similarity detection using CLIP embeddings
-- **📊 Quality Metrics**: Automated image quality assessment (blur, brightness, contrast)
-- **🎨 Modern Frontend**: React 18 with Zustand state management and Tailwind CSS
-- **⚡ FastAPI Backend**: High-performance API with session management and security
-- **🧪 Comprehensive Testing**: 94% test coverage with pytest framework
-- **🚀 Production Deployment**: Docker, CI/CD, and multi-platform deployment support
+- **🤖 CLIP-based Similarity Engine**: Deep learning embeddings for visual comparison
+- **📊 CV Quality Metrics**: Automated blur/brightness/contrast assessment using OpenCV
+- **🎨 Modern React Frontend**: Drag-and-drop interface with real-time analysis
+- **⚡ FastAPI Backend**: High-performance async API with PyTorch model serving
+- **☁️ Cloud Storage**: Cloudflare R2 (S3-compatible) for scalable file storage
+- **🧪 Comprehensive Testing**: Core functionality validated with pytest
+- **🚀 Production Deployment**: Render.com + Vercel with automated CI/CD
 
 ---
 
