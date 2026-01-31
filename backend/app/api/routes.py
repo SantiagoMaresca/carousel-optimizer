@@ -22,6 +22,7 @@ from app.api.dependencies import (
 from core.security import validate_upload_file, get_safe_filename
 from core.logger import get_api_logger, log_request, log_response, log_error
 from core.storage import storage_service
+from core.session_manager import session_manager
 from app.config import settings, UPLOAD_PATH
 from modules.embeddings import embedding_generator
 from modules.quality_metrics import QualityAnalyzer
