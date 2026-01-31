@@ -4,8 +4,8 @@ uvicorn[standard]==0.24.0
 python-multipart==0.0.6
 
 # AI/ML Stack
-torch==2.2.0
-torchvision==0.17.0
+torch==2.9.0
+torchvision==0.24.0
 open-clip-torch==2.23.0
 opencv-python==4.8.1.78
 Pillow==10.1.0
