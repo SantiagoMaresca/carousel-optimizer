@@ -219,16 +219,12 @@ async def analyze_images(
                    session_id=session_id,
                    image_count=len(image_paths))
         
-        # Step 1: Parallel quality analysis and embedding generation
-        quality_task = asyncio.create_task(
-            QualityAnalyzer.analyze_images_parallel(image_paths)
-        )
-        embedding_task = asyncio.create_task(
-            embedding_generator.generate_embeddings_batch(image_paths)
-        )
+        # Step 1: Sequential processing to reduce memory usage
+        # Process quality analysis first
+        quality_results = await QualityAnalyzer.analyze_images_parallel(image_paths)
         
-        quality_results = await quality_task
-        embeddings = await embedding_task
+        # Then generate embeddings (CLIP model)
+        embeddings = await embedding_generator.generate_embeddings_batch(image_paths)
         
         # Step 2: Create ImageData objects
         images = []
