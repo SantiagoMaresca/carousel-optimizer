@@ -34,10 +34,8 @@ async def lifespan(app: FastAPI):
     logger.info("Starting Carousel Optimizer application...")
     
     try:
-        # Initialize CLIP model
-        logger.info("Loading CLIP model...")
-        await embedding_generator.initialize()
-        logger.info("CLIP model loaded successfully")
+        # CLIP model will be lazy-loaded on first use
+        logger.info("CLIP model will be loaded on first request")
         
         # Start session cleanup task
         await session_manager.start_cleanup_task()
