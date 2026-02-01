@@ -56,17 +56,23 @@ class SessionManager:
         session_path = self.upload_dir / session_id
         
         try:
-            session_path.mkdir(parents=True, exist_ok=True)
-            
             session_data = SessionData(session_id, datetime.utcnow())
             self.sessions[session_id] = session_data
             
             # Save session metadata
-            metadata_file = session_path / "metadata.json"
-            with open(metadata_file, 'w') as f:
-                json.dump(session_data.to_dict(), f)
+            metadata_json = json.dumps(session_data.to_dict())
             
-            logger.info("Session created", session_id=session_id)
+            if storage_service.use_s3:
+                # Save metadata to S3
+                await storage_service.save_file(session_id, "metadata.json", metadata_json.encode('utf-8'))
+            else:
+                # Save metadata to local disk
+                session_path.mkdir(parents=True, exist_ok=True)
+                metadata_file = session_path / "metadata.json"
+                with open(metadata_file, 'w') as f:
+                    f.write(metadata_json)
+            
+            logger.info("Session created", session_id=session_id, use_s3=storage_service.use_s3)
             return session_id
             
         except Exception as e:
@@ -204,26 +210,37 @@ class SessionManager:
         return cleanup_count
     
     async def _load_session_from_disk(self, session_id: str) -> bool:
-        """Load session data from disk."""
+        """Load session data from disk or S3."""
         try:
-            session_dir = self.upload_dir / session_id
-            metadata_file = session_dir / "metadata.json"
-            
-            if not metadata_file.exists():
-                return False
-            
-            with open(metadata_file, 'r') as f:
-                metadata = json.load(f)
+            if storage_service.use_s3:
+                # Load metadata from S3
+                try:
+                    metadata_content = await storage_service.read_file(session_id, "metadata.json")
+                    metadata = json.loads(metadata_content.decode('utf-8'))
+                except Exception as s3_error:
+                    logger.debug("Session metadata not found in S3", session_id=session_id, error=str(s3_error))
+                    return False
+            else:
+                # Load metadata from local disk
+                session_dir = self.upload_dir / session_id
+                metadata_file = session_dir / "metadata.json"
+                
+                if not metadata_file.exists():
+                    return False
+                
+                with open(metadata_file, 'r') as f:
+                    metadata = json.load(f)
             
             session_data = SessionData(session_id, datetime.fromisoformat(metadata['created_at']))
             session_data.files = metadata.get('files', [])
             session_data.metadata = metadata.get('metadata', {})
             
             self.sessions[session_id] = session_data
+            logger.debug("Session loaded from storage", session_id=session_id, use_s3=storage_service.use_s3)
             return True
             
         except Exception as e:
-            logger.error("Failed to load session from disk", session_id=session_id, error=str(e))
+            logger.error("Failed to load session from storage", session_id=session_id, error=str(e))
             return False
     
     async def start_cleanup_task(self):
