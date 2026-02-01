@@ -98,13 +98,20 @@ class SessionManager:
                     session.metadata['filename_map'] = {}
                 session.metadata['filename_map'][filename] = original_filename
                 
-                # Save updated metadata
+            # Save updated metadata to S3 or local disk
+            metadata_json = json.dumps(session.to_dict())
+            
+            if storage_service.use_s3:
+                # Update metadata in S3
+                await storage_service.save_file(session_id, "metadata.json", metadata_json.encode('utf-8'))
+            else:
+                # Update metadata on local disk
                 session_dir = self.upload_dir / session_id
                 metadata_file = session_dir / "metadata.json"
                 with open(metadata_file, 'w') as f:
-                    json.dump(session.to_dict(), f)
+                    f.write(metadata_json)
                     
-            logger.debug("File added to session", session_id=session_id, filename=filename, original=original_filename)
+            logger.debug("File added to session", session_id=session_id, filename=filename, original=original_filename, use_s3=storage_service.use_s3)
     
     async def get_session_files(self, session_id: str) -> List[Path]:
         """
@@ -182,21 +189,40 @@ class SessionManager:
             if session_data.created_at < cutoff_time:
                 expired_sessions.append(session_id)
         
-        # Find expired sessions on disk
-        if self.upload_dir.exists():
-            for session_dir in self.upload_dir.iterdir():
-                if session_dir.is_dir():
-                    metadata_file = session_dir / "metadata.json"
-                    if metadata_file.exists():
-                        try:
-                            with open(metadata_file, 'r') as f:
-                                metadata = json.load(f)
-                            created_at = datetime.fromisoformat(metadata['created_at'])
-                            if created_at < cutoff_time:
+        # Find expired sessions in storage
+        if storage_service.use_s3:
+            # List all sessions from S3
+            try:
+                all_sessions = await storage_service.list_sessions()
+                for session_id in all_sessions:
+                    # Load metadata from S3
+                    try:
+                        metadata_content = await storage_service.read_file(session_id, "metadata.json")
+                        metadata = json.loads(metadata_content.decode('utf-8'))
+                        created_at = datetime.fromisoformat(metadata['created_at'])
+                        if created_at < cutoff_time:
+                            expired_sessions.append(session_id)
+                    except Exception:
+                        # If we can't read metadata, consider it expired
+                        expired_sessions.append(session_id)
+            except Exception as e:
+                logger.error("Failed to list S3 sessions for cleanup", error=str(e))
+        else:
+            # Find expired sessions on local disk
+            if self.upload_dir.exists():
+                for session_dir in self.upload_dir.iterdir():
+                    if session_dir.is_dir():
+                        metadata_file = session_dir / "metadata.json"
+                        if metadata_file.exists():
+                            try:
+                                with open(metadata_file, 'r') as f:
+                                    metadata = json.load(f)
+                                created_at = datetime.fromisoformat(metadata['created_at'])
+                                if created_at < cutoff_time:
+                                    expired_sessions.append(session_dir.name)
+                            except Exception:
+                                # If we can't read metadata, consider it expired
                                 expired_sessions.append(session_dir.name)
-                        except Exception:
-                            # If we can't read metadata, consider it expired
-                            expired_sessions.append(session_dir.name)
         
         # Clean up expired sessions
         cleanup_count = 0
@@ -205,7 +231,7 @@ class SessionManager:
                 cleanup_count += 1
         
         if cleanup_count > 0:
-            logger.info("Cleaned up expired sessions", count=cleanup_count)
+            logger.info("Cleaned up expired sessions", count=cleanup_count, use_s3=storage_service.use_s3)
         
         return cleanup_count
     

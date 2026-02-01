@@ -291,6 +291,55 @@ class StorageService:
         session_dir = self.upload_dir / session_id
         return session_dir.exists() and any(session_dir.iterdir())
     
+    async def list_sessions(self) -> list[str]:
+        """
+        List all session IDs in storage.
+        
+        Returns:
+            List of session IDs
+        """
+        if self.use_s3:
+            return await self._list_sessions_from_s3()
+        else:
+            return await self._list_sessions_from_local()
+    
+    async def _list_sessions_from_s3(self) -> list[str]:
+        """List all sessions from S3/R2."""
+        try:
+            sessions = set()
+            paginator = self.s3_client.get_paginator('list_objects_v2')
+            
+            # List all objects and extract unique session IDs (prefixes)
+            for page in paginator.paginate(Bucket=self.bucket, Delimiter='/'):
+                if 'CommonPrefixes' in page:
+                    for prefix in page['CommonPrefixes']:
+                        # Remove trailing slash to get session ID
+                        session_id = prefix['Prefix'].rstrip('/')
+                        sessions.add(session_id)
+            
+            return list(sessions)
+            
+        except ClientError as e:
+            logger.error("Failed to list sessions from S3", error=str(e))
+            return []
+    
+    async def _list_sessions_from_local(self) -> list[str]:
+        """List all sessions from local filesystem."""
+        try:
+            if not self.upload_dir.exists():
+                return []
+            
+            sessions = []
+            for session_dir in self.upload_dir.iterdir():
+                if session_dir.is_dir():
+                    sessions.append(session_dir.name)
+            
+            return sessions
+            
+        except Exception as e:
+            logger.error("Failed to list sessions from local", error=str(e))
+            return []
+    
     def _get_content_type(self, filename: str) -> str:
         """Get content type based on file extension."""
         extension = Path(filename).suffix.lower()
