@@ -42,22 +42,24 @@ const UploadPage = () => {
     try {
       // Upload files - session is created automatically by the API
       const uploadResponse = await apiService.uploadFiles(uploadedFiles)
+      console.log('Upload response:', uploadResponse)
+      
       const newSessionId = uploadResponse.session_id
       setSessionId(newSessionId)
       
       if (uploadResponse.success_count > 0) {
         toast.success(`Uploaded ${uploadResponse.success_count} images successfully`)
-        // Move to analysis
-        handleAnalyze(newSessionId)
+        // Move to analysis (don't stop loading, analysis will handle it)
+        await handleAnalyze(newSessionId)
       } else {
         throw new Error('No images were uploaded successfully')
       }
     } catch (error) {
       console.error('Upload failed:', error)
+      console.error('Error details:', error.response?.data || error.message)
       setError(error.message || 'Upload failed')
-      toast.error('Upload failed. Please try again.')
-    } finally {
-      setLoading(false)
+      toast.error(error.response?.data?.detail || error.message || 'Upload failed. Please try again.')
+      setLoading(false) // Only stop loading on error
     }
   }
 
@@ -69,6 +71,7 @@ const UploadPage = () => {
 
     setLoading(true)
     setStep('analyzing')
+    toast.loading('Analyzing images with AI... This may take a few seconds', { id: 'analyzing', duration: 15000 })
 
     try {
       const analysisResponse = await apiService.analyzeImages(currentSessionId)
@@ -76,11 +79,13 @@ const UploadPage = () => {
       // Store analysis results in the store
       useAppStore.getState().setAnalysisResults(analysisResponse)
       
-      toast.success(`Analysis complete! Processed in ${analysisResponse.processing_time_ms}ms`)
+      toast.dismiss('analyzing')
+      toast.success(`Analysis complete! Processed ${analysisResponse.images.length} images`)
       setStep('results')
     } catch (error) {
       console.error('Analysis failed:', error)
       setError(error.message || 'Analysis failed')
+      toast.dismiss('analyzing')
       toast.error('Analysis failed. Please try again.')
       setStep('upload')
     } finally {
