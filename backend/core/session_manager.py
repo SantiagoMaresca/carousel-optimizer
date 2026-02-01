@@ -89,8 +89,11 @@ class SessionManager:
     
     async def add_file_to_session(self, session_id: str, filename: str, original_filename: str = None) -> None:
         """Add a file to session tracking with original filename mapping."""
-        session = await self.get_session(session_id)
-        if session:
+        try:
+            session = await self.get_session(session_id)
+            if not session:
+                raise ValueError(f"Session {session_id} not found")
+            
             session.files.append(filename)
             # Store original filename mapping
             if original_filename:
@@ -112,6 +115,9 @@ class SessionManager:
                     f.write(metadata_json)
                     
             logger.debug("File added to session", session_id=session_id, filename=filename, original=original_filename, use_s3=storage_service.use_s3)
+        except Exception as e:
+            logger.error("Failed to add file to session", session_id=session_id, filename=filename, error=str(e))
+            raise
     
     async def get_session_files(self, session_id: str) -> List[Path]:
         """
