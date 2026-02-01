@@ -2,6 +2,8 @@ import React from 'react'
 import useAppStore from '../stores/appStore'
 import FileDropzone from '../components/FileDropzone'
 import LoadingSpinner from '../components/LoadingSpinner'
+import AnalyzingView from '../components/AnalyzingView'
+import ErrorPage from './ErrorPage'
 import { apiService } from '../services/api'
 import { Sparkles, ArrowRight, Image as ImageIcon, Upload } from 'lucide-react'
 import toast from 'react-hot-toast'
@@ -14,8 +16,10 @@ const UploadPage = () => {
     setSessionId,
     isLoading,
     setLoading,
+    error,
     setError,
     setStep,
+    step,
     canAnalyze,
     reset
   } = useAppStore()
@@ -96,6 +100,16 @@ const UploadPage = () => {
   const handleReset = () => {
     reset()
     toast.success('Reset complete. You can upload new images.')
+  }
+
+  // Show analyzing view when analyzing
+  if (step === 'analyzing') {
+    return <AnalyzingView />
+  }
+
+  // Show error page if there's an error
+  if (error && step === 'upload') {
+    return <ErrorPage error={error} onRetry={handleReset} />
   }
 
   return (
