@@ -210,8 +210,10 @@ class EmbeddingGenerator:
         Returns:
             List of normalized embedding vectors
         """
+        # Auto-initialize model on first use (lazy loading)
         if not self.model:
-            raise RuntimeError("Model not initialized. Call initialize() first.")
+            logger.info("Model not loaded, initializing now (lazy load)...")
+            await self.initialize()
         
         logger.info("Generating batch embeddings", image_count=len(image_paths))
         
