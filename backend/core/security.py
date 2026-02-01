@@ -120,7 +120,7 @@ class SecureFileValidator:
                     raise
                 raise SecurityError(f"Invalid image file: {str(e)}")
             
-        except SecurityError:
+        except SecurityError as e:
             logger.warning("File validation failed", filename=file.filename, error=str(e))
             raise
         except Exception as e:
